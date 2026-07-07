@@ -1,0 +1,13 @@
+{
+  "name": "job-alert-bot",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Pulls backend dev job postings every 12h, filters them with Claude, sends matches to Telegram.",
+  "main": "src/index.mjs",
+  "scripts": {
+    "start": "node src/index.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
