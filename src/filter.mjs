@@ -45,10 +45,10 @@ export async function filterWithClaude(jobs) {
   const candidates = keywordPreFilter(jobs).slice(0, 60); // cap for cost/context
   if (candidates.length === 0) return [];
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    console.warn("No ANTHROPIC_API_KEY set — skipping this run's matches entirely (not sending unfiltered results).");
-    return [];
+    console.warn("No ANTHROPIC_API_KEY set — sending Stage 1 (keyword) matches, unfiltered.");
+    return candidates.map((c) => ({ ...c, reason: "⚠️ keyword match only — AI filter not run" }));
   }
 
   const listForModel = candidates.map((c, i) => ({
@@ -88,9 +88,9 @@ matches, return [].`;
     }),
   });
 
-  if (!res.ok) {
+if (!res.ok) {
     console.error("Claude filter call failed:", res.status, await res.text());
-    return []; // don't spam unfiltered matches when the AI call errors out
+    return candidates.map((c) => ({ ...c, reason: "⚠️ keyword match only — AI filter failed" }));
   }
 
   const data = await res.json();
