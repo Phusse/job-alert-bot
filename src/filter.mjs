@@ -1,9 +1,17 @@
 const KEYWORDS = [
+  // Backend
   "backend", "back-end", "back end", "node", "nodejs", "node.js",
   ".net", "dotnet", "c#", "csharp", "asp.net",
-  "express", "nestjs", "microservice", "api developer",
+  "express", "nestjs", "microservice", "api developer", "multi-tenancy",
   "golang", "go developer", "java developer", "python developer",
   "full stack", "fullstack", "software engineer",
+  // Frontend
+  "frontend", "front-end", "front end", "react developer", "react.js",
+  "vue developer", "nextjs developer", "javascript developer",
+  "typescript developer", "web developer",
+  // QA
+  "qa engineer", "quality assurance", "test engineer", "sdet",
+  "automation engineer", "manual tester", "qa analyst",
 ];
 
 function keywordPreFilter(jobs) {
@@ -19,9 +27,18 @@ const PROFILE = `
 Backend-focused full-stack software engineer, ~6 years experience, based in
 Lagos, Nigeria. Core stack: .NET / C#, Node.js, React, microservices,
 Postgres/Supabase, AWS. Comfortable with contract, remote-first, or
-consulting-style engagements. Not interested in: junior/entry-level roles,
-on-site-only roles outside Nigeria, non-technical roles, roles requiring
-existing US/EU work authorization (unless explicitly remote-anywhere).
+consulting-style engagements.
+
+Only match roles in these three categories:
+1. Backend engineering (any language/stack)
+2. Frontend engineering (React preferred, but open to other JS frameworks)
+3. QA / Test / SDET / QA automation
+
+Reject everything else, including: WordPress-only or Shopify-only roles,
+pure UI/graphic/product design roles (even if titled "web designer"),
+non-technical roles, junior/entry-level roles, on-site-only roles outside
+Nigeria, and roles requiring existing US/EU work authorization (unless
+explicitly remote-anywhere).
 `;
 
 export async function filterWithClaude(jobs) {
@@ -30,8 +47,8 @@ export async function filterWithClaude(jobs) {
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    console.warn("No ANTHROPIC_API_KEY set — skipping AI filtering, returning keyword matches as-is.");
-    return candidates.map((c) => ({ ...c, reason: "keyword match (AI filter skipped)" }));
+    console.warn("No ANTHROPIC_API_KEY set — skipping this run's matches entirely (not sending unfiltered results).");
+    return [];
   }
 
   const listForModel = candidates.map((c, i) => ({
@@ -73,7 +90,7 @@ matches, return [].`;
 
   if (!res.ok) {
     console.error("Claude filter call failed:", res.status, await res.text());
-    return candidates.map((c) => ({ ...c, reason: "keyword match (AI filter failed)" }));
+    return []; // don't spam unfiltered matches when the AI call errors out
   }
 
   const data = await res.json();
